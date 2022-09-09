@@ -811,22 +811,25 @@ class ImportTask(BaseImportTask):
         """For reimports, preserves metadata for reimported items and
         albums.
         """
-        only_fields = []
+        cherrypick_fields = []
         if self.album.data_source == 'Discogs':
-            only_fields = config['discogs']['fields'].as_str_seq()
+            cherrypick_fields = config['discogs']['fields'].as_str_seq()
         elif self.album.data_source == 'Spotify':
-            only_fields = config['spotify']['fields'].as_str_seq()
+            cherrypick_fields = config['spotify']['fields'].as_str_seq()
 
         if self.is_album:
             replaced_album = self.replaced_albums.get(self.album.path)
             if replaced_album:
                 self.album.added = replaced_album.added
 
-                if len(only_fields) > 0:
-                    for field, _ in library.Album._fields.items():
-                        if field not in only_fields and \
-                           replaced_album.get(field) is not None:
-                            self.album[field] = replaced_album[field]
+                if len(cherrypick_fields) > 0:
+                    for field in self.album.keys():
+                        if field not in cherrypick_fields:
+                            if replaced_album.get(field) is not None:
+                                self.album[field] = replaced_album[field]
+                            elif self.album.get(field) is not None:
+                                del self.album[field]
+                                log.debug(f"-> Prevented import of new field <{field}>")
 
                 self.album.update(replaced_album._values_flex)
                 self.album.artpath = replaced_album.artpath
@@ -853,11 +856,14 @@ class ImportTask(BaseImportTask):
                         displayable_path(item.path)
                     )
 
-                if len(only_fields) > 0:
-                    for field, _ in library.Item._fields.items():
-                        if field not in only_fields and \
-                           dup_item.get(field) is not None:
-                            item[field] = dup_item[field]
+                if len(cherrypick_fields) > 0:
+                    for field in item.keys():
+                        if field not in cherrypick_fields:
+                            if dup_item.get(field) is not None:
+                                item[field] = dup_item[field]
+                            elif item.get(field) is not None:
+                                del item[field]
+                                log.debug(f"-> Prevented import of new field <{field}>")
 
                 item.update(dup_item._values_flex)
                 log.debug(
