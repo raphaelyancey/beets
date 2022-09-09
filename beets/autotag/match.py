@@ -268,6 +268,9 @@ def match_by_id(items):
     AlbumInfo object for the corresponding album. Otherwise, returns
     None.
     """
+    if not config["musicbrainz"]["enabled"]:
+        return None
+
     albumids = (item.mb_albumid for item in items if item.mb_albumid)
 
     # Did any of the items have an MB album ID?
