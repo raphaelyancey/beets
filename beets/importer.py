@@ -17,7 +17,10 @@
 autotagging music files.
 """
 
+from dataclasses import replace
+import copy
 import os
+from pprint import pprint
 import re
 import pickle
 import itertools
@@ -811,10 +814,24 @@ class ImportTask(BaseImportTask):
         """For reimports, preserves metadata for reimported items and
         albums.
         """
+        only_fields = []
+        if self.album.data_source == 'Discogs':
+            only_fields = config['discogs']['fields'].as_str_seq()
+        elif self.album.data_source == 'Spotify':
+            only_fields = config['spotify']['fields'].as_str_seq()
+        log.debug(f"--> Only fields: {only_fields}")
+
         if self.is_album:
             replaced_album = self.replaced_albums.get(self.album.path)
             if replaced_album:
                 self.album.added = replaced_album.added
+
+                if len(only_fields) > 0:
+                    for field, _ in library.Album._fields.items():
+                        if field not in only_fields and replaced_album.get(field) is not None:
+                            log.debug(f"--> Writing field {field} (value <{replaced_album[field]}>)")
+                            self.album[field] = replaced_album[field]
+
                 self.album.update(replaced_album._values_flex)
                 self.album.artpath = replaced_album.artpath
                 self.album.store()
@@ -839,6 +856,13 @@ class ImportTask(BaseImportTask):
                         dup_item.id,
                         displayable_path(item.path)
                     )
+
+                if len(only_fields) > 0:
+                    for field, _ in library.Item._fields.items():
+                        if field not in only_fields and dup_item.get(field) is not None:
+                            log.debug(f"--> Writing field {field} (value <{dup_item[field]}>)")
+                            item[field] = dup_item[field]
+
                 item.update(dup_item._values_flex)
                 log.debug(
                     'Reimported item flexible attributes {0} '
