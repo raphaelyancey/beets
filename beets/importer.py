@@ -17,10 +17,7 @@
 autotagging music files.
 """
 
-from dataclasses import replace
-import copy
 import os
-from pprint import pprint
 import re
 import pickle
 import itertools
@@ -819,7 +816,6 @@ class ImportTask(BaseImportTask):
             only_fields = config['discogs']['fields'].as_str_seq()
         elif self.album.data_source == 'Spotify':
             only_fields = config['spotify']['fields'].as_str_seq()
-        log.debug(f"--> Only fields: {only_fields}")
 
         if self.is_album:
             replaced_album = self.replaced_albums.get(self.album.path)
@@ -828,8 +824,8 @@ class ImportTask(BaseImportTask):
 
                 if len(only_fields) > 0:
                     for field, _ in library.Album._fields.items():
-                        if field not in only_fields and replaced_album.get(field) is not None:
-                            log.debug(f"--> Writing field {field} (value <{replaced_album[field]}>)")
+                        if field not in only_fields and \
+                           replaced_album.get(field) is not None:
                             self.album[field] = replaced_album[field]
 
                 self.album.update(replaced_album._values_flex)
@@ -859,8 +855,8 @@ class ImportTask(BaseImportTask):
 
                 if len(only_fields) > 0:
                     for field, _ in library.Item._fields.items():
-                        if field not in only_fields and dup_item.get(field) is not None:
-                            log.debug(f"--> Writing field {field} (value <{dup_item[field]}>)")
+                        if field not in only_fields and \
+                           dup_item.get(field) is not None:
                             item[field] = dup_item[field]
 
                 item.update(dup_item._values_flex)
