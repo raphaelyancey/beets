@@ -33,6 +33,7 @@ import:
     duplicate_action: ask
     bell: no
     set_fields: {}
+    cherrypick_fields: []
 
 clutter: ["Thumbs.DB", ".DS_Store"]
 ignore: [".*", "*~", "System Volume Information", "lost+found"]
