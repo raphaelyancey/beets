@@ -821,8 +821,9 @@ class ImportTask(BaseImportTask):
 
                 if len(cherrypick_fields) > 0:
                     for field in self.album.keys():
+                        old_field = replaced_album.get(field)
+                        log.debug(f"field <{field}> old <{old_field}> new <{self.album[field]}>")
                         if field not in cherrypick_fields:
-                            old_field = replaced_album.get(field)
                             if old_field is not None:
                                 self.album[field] = replaced_album[field]
                             if old_field in ['', None]:
@@ -857,6 +858,7 @@ class ImportTask(BaseImportTask):
                     for field in item.keys():
                         if field not in cherrypick_fields:
                             old_field = dup_item.get(field)
+                            log.debug(f"field <{field}> old <{old_field}> new <{item[field]}>")
                             if old_field is not None:
                                 item[field] = dup_item[field]
                             if old_field in ['', None]:
